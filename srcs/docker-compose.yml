@@ -1,0 +1,35 @@
+# orquestador de servicios
+
+# Se encargará de levantar los servicios.
+# También crea automáticamente la bridge dónde estarán los servicios
+version: '3.8'
+
+services:
+  nginx:
+    build: ./requirements/nginx # Ruta dockerfile NGINX
+    container_name: nginx
+    networks:
+      - inception
+    ports:
+      - "443:443"
+    restart: always # Restart: Policy "Apuntes.md, line 31"
+
+  wordpress:
+    build: ./requirements/wordpress
+    container_name: wordpress
+    networks:
+      - inception
+    restart: always
+
+  mariadb:
+    build: ./requirements/mariadb
+    container_name: mariadb
+    networks:
+      - inception
+    restart: always
+
+# Aqui estoy definiendo el tipo de network que usaremos, en este caso
+# bridge.
+networks:
+  inception:
+    driver : bridge

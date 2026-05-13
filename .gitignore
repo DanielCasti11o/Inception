@@ -1,0 +1,9 @@
+
+# repo
+.git
+
+# enviroment
+.env
+
+# IDE
+.vscode
