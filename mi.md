@@ -53,3 +53,24 @@ Y lo usaré para guardar la BBDD de Wordpress y los archivos del sitio.
 
 Son la manera correcta de guardar las contraseñas en inception, ya que no aparecen en un .env ni en el historial de la imagen.
 
+Ya que estamos hablando del secrets tenemos que tener cuenta en este proyecto que deben haber varios niveles de seguridad para los datos de configuracion del proyecto.
+
+# NIVEL 1: .env
+Variables de entorno de configuracion no sensible: Name de la database, el domain o el title del site.
+
+# NIVEL 2: secrets/
+Las contraseñas de MariaDB o datos un poco más sensibles. Viven en la máquina local.
+
+
+_______________________________________________________________
+4. Paso a paso para implementarlo:
+
+    Crea los archivos de texto:
+    Crea un archivo llamado db_password.txt y escribe dentro solo tu contraseña (ej: mi_password_seguro_123).
+
+    Modifica el Compose:
+    Añade la sección secrets: abajo del todo y dentro del servicio mariadb, como en el ejemplo de arriba.
+
+    En el contenedor:
+    Cuando levantes con docker-compose up, si entras en el contenedor de mariadb (docker exec -it mariadb bash), verás que existe un archivo en /run/secrets/db_password que contiene tu clave.
+_______________________________________________________________
