@@ -74,3 +74,29 @@ _______________________________________________________________
     En el contenedor:
     Cuando levantes con docker-compose up, si entras en el contenedor de mariadb (docker exec -it mariadb bash), verás que existe un archivo en /run/secrets/db_password que contiene tu clave.
 _______________________________________________________________
+
+
+# Nuevas utilidades del MAKEFILE
+
+He visto que para el makefile podré usar cosas nuevas como:
+
+build: construye imagenes sin arrancarlas
+
+up: arranca contenedores ya construidos
+
+down: detiene y elimina contenedores e imagenes.
+
+status / logs : Inspección del stack en ejecucción. Logs en tiempo real.
+
+
+# Limpieza profunda del Makefile con docker compose
+
+@docker system prune -a --volumes -f
+
+El "system prune" busca y elimina lo que docker llama dangling(recursos colgados).
+
+La flag "-a" all/todo
+
+-- volumes : volumenes: Borrar el volumen te asegura que la base de datos se creará desde cero de verdad.
+
+-f : FORZARLO
