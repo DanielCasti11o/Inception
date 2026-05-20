@@ -132,7 +132,7 @@ bind-address = 0.0.0.0 // Dirección de escucha. Tarjeta de red.
 
 Esto lo que hará es permitir conexiones que vengan de cualquier IP dentro de la misma red. Para que después desde el contenedor de WordPress nos podamos conectar a ella.
 
-# entrypoint.sh
+# entrypoint.sh // script que crea el user y especifica que debe ser del docker de WordPress.
 
 ENTRYPOINT	Especifique el ejecutable predeterminado. función del dockerfile.
 
@@ -146,3 +146,19 @@ FROM alpine:3.19
 Vale primero debemos tener en cuenta que el from es la base de la cual va a tomar como referencia para el sistema operativo que correrá en el docker, en este caso será Alphine.
 
 Alphine es una distribución de linux ultra ligera: 5mb, al tener tan pocos programas instalados por defecto tiene menos brechas para ser hackeada.
+
+# Descarga de paquetes.
+
+Cuando Docker ejecuta ese comando apk add mariadb durante la construcción (el build), el gestor de paquetes de Alpine descarga MariaDB e instala cientos de archivos automáticamente. Entre ellos, crea la carpeta /etc/my.cnf.d/ y mete ahí dentro los archivos de configuración por defecto.
+
+# Funcionamiento del COPY
+
+COPY  <ruta_en_tu_ordenador>  <ruta_dentro_del_contenedor>
+
+<ruta_en_tu_ordenador> = aqui podemos poner la ruta/archivo que queramos que este dentro del build context.
+
+<ruta_dentro_del_contenedor> = Es una ruta absoluta dentro del disco duro virtual dentro de contenedor. Tenemos que tener en cuenta que en el caso de que no exista una ruta
+
+Además con este comando podemos copiar varios archivos a un destino.
+
+COPY <archivo1.txt> <archivo2.txt> <notas.txt> /app/
