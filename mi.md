@@ -100,3 +100,49 @@ La flag "-a" all/todo
 -- volumes : volumenes: Borrar el volumen te asegura que la base de datos se creará desde cero de verdad.
 
 -f : FORZARLO
+
+# MariaDB
+
+estructura de archivos / funcionalidad de archivos.
+
+# Dockerfile
+
+Queria empezar entendiendo el .dockerignore pero me encontré con un problema que para poder entenderlo, debía profundizar en el concepto básico del dockerfile.
+Y es que existe algo que se llama el "Build Context".
+
+Cuando ejecutamos el comando --> docker compose build.
+lo que pasa es que toma desde la ruta actual todo los archivos existentes de esa ruta y crea un archivo comprimido invisible y envia ese paquete a docker daemon(motor). Este proceso se conoce como "Sending build context to Docker daemon."
+
+Ahora entendiendo esto, vamos con el ignore...
+
+# .dockerignore
+es similar al .gitignore.
+Es para no incluir archivos. Ya que no queremos que hagan parte de la imagen.
+Ahora si tenemos la carpeta(ruta donde realizamos el build context) entonces no pasa nada y verás que el contexto pesa unos poco kb.
+Esto es bueno usarlo, ya que como sabemos al usar visual se crean a veces archivos ocultos como .vscode/ entonces con esto evitamos en todo momento que se pueda subir basura al proyecto.
+También evita que por ejemplo en el build context de la imagen subamos notas de contraseñas como las de los secrets generando vulnerabilidades de la seguridad.
+HACIENDOLO DE ESTA MANERA MUY IMPRESCINDIBLE.
+
+# conf/ .conf
+
+Es el archivo de conf original de MariaDB.
+Exceptuando porque debemos cambiar una linea:
+
+bind-address = 0.0.0.0 // Dirección de escucha. Tarjeta de red.
+
+Esto lo que hará es permitir conexiones que vengan de cualquier IP dentro de la misma red. Para que después desde el contenedor de WordPress nos podamos conectar a ella.
+
+# entrypoint.sh
+
+ENTRYPOINT	Especifique el ejecutable predeterminado. función del dockerfile.
+
+Y esto exactamente lo que va a hacer es crear el punto de entrada único que se pueda conectar a la base de datos. En este caso nos referiremos a un usuario que crearemos y especificaremos que debe ser proveniente de WordPress para poder conectarse a MariaDB.
+
+# DOCKER FILE : MARIA DB
+
+# Penúltima versión estable de Alpine (no latest)
+FROM alpine:3.19
+
+Vale primero debemos tener en cuenta que el from es la base de la cual va a tomar como referencia para el sistema operativo que correrá en el docker, en este caso será Alphine.
+
+Alphine es una distribución de linux ultra ligera: 5mb, al tener tan pocos programas instalados por defecto tiene menos brechas para ser hackeada.
