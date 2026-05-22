@@ -19,6 +19,14 @@ services:
     container_name: wordpress
     env_file:
       - .env # Include environments.
+    secrets:
+      - db_password
+      - wp_user_passwd
+      - wp_admin_passwd
+    environment:
+      - MYSQL_PASSWORD_FILE=/run/secrets/db_password.txt
+      - WP_USPASSWD_FILE=/run/secrets/wp_passwd.txt
+      - WP_ADMPASSWD_FILE=/run/secrets/wp_admin_passwd.txt
     networks:
       - inception
     restart: always
@@ -32,8 +40,8 @@ services:
     environment:
       - MYSQL_DATABASE=${MYSQL_DATABASE} # Name of environments.
       - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD_FILE=/run/secrets/db_password
-      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets_db_root_password
+      - MYSQL_PASSWORD_FILE=/run/secrets/db_password.txt
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_root_password.txt
     networks:
       - inception
     restart: always
@@ -49,6 +57,6 @@ networks:
 
 secrets:
   db_password:
-    file: ./db_password.txt
+    file: ./secrets/db_password.txt
   db_root_password:
-    file: ./db_root_password.txt
+    file: ./secrets/db_root_password.txt

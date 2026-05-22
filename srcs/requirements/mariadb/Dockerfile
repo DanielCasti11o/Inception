@@ -15,7 +15,7 @@ RUN chmod +x /entrypoint.sh
 
 # Volumenes de datos (VIVOS)
 
-RUN mkdir -p /var/lib/mysql
+RUN mkdir -p /var/lib/mysql && \
     chown -R mysql:mysql /var/lib/mysql
 # siendo /var/lib/mysql la ruta del directorio dónde estará el motor de la base
 # de datos y dónde se guardaran las tablas y usuarios.

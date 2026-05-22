@@ -162,3 +162,16 @@ COPY  <ruta_en_tu_ordenador>  <ruta_dentro_del_contenedor>
 Además con este comando podemos copiar varios archivos a un destino.
 
 COPY <archivo1.txt> <archivo2.txt> <notas.txt> /app/
+
+
+# EntryPoint
+
+Básicamente lo que haremos en este script de bash será abrir el heredoc para crear un archivo SQL, dónde especificaremos de crear la tabla en caso de que no exista y también de crear el usuario con su contraseña y establecerle los privilegios, solo sí la conexion se realiza a tráves del contenedor de Wordpress.
+
+También es importante recordar lo que es un:
+
+Daemon: es el motor principal que se encarga de gestionar el contenedor, funciona en segundo plano y se encarga del trabajo a nivel de sistema operativo.
+
+# .conf
+
+Vale para
