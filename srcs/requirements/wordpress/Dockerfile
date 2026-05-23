@@ -1,9 +1,11 @@
-FROM alpine 3.19
+FROM alpine:3.19
 
 RUN apk update && apk add --no-cache \
     php83 \
+    netcat-openbsd \
+    php83-phar \
     php83-fpm \
-    php83-mysqli       # conexión con MariaDB
+    php83-mysqli \
     php83-json \
     php83-curl \
     php83-dom \
@@ -17,13 +19,19 @@ RUN apk update && apk add --no-cache \
     unzip && \
     rm -rf /var/cache/apk/*
 
+RUN adduser -S -G www-data -H -D www-data
+
 # WP-CLI — herramienta de línea de comandos para WordPress
 RUN wget -q https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
     && chmod +x wp-cli.phar \
     && mv wp-cli.phar /usr/local/bin/wp
 
+RUN ln -s /usr/bin/php83 /usr/bin/php
+RUN ln -s /etc/php83 /etc/php
 
-# Directorio raíz del sitio — el volumen se monta aquí
+RUN sed -i 's/memory_limit = 128M/memory_limit = 512M/g' /etc/php83/php.ini
+
+# Directorio raíz del sitio — el volumen se monta aquí // a parte esta será la ruta dónde se crearán todos los html.
 RUN mkdir -p /var/www/html
 WORKDIR /var/www/html
 

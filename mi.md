@@ -166,6 +166,10 @@ COPY <archivo1.txt> <archivo2.txt> <notas.txt> /app/
 
 # EntryPoint
 
+El entrypoint es básicamente una función de docker dónde especificamos lo primero que se va ejecutar en el docker una vez se construya con todas las condiciones del docker file.
+
+Esto lo puedes ver directamente una vez que hayas terminado de crear el docker file, y especifiques en el dockerfile ENTRYPOINT[script.sh], que en la terminal una vez se construya la imagen, lo siguiente que se hará en el procedimiento es correr el entrypoint y hará todo lo que este en el script.
+
 Básicamente lo que haremos en este script de bash será abrir el heredoc para crear un archivo SQL, dónde especificaremos de crear la tabla en caso de que no exista y también de crear el usuario con su contraseña y establecerle los privilegios, solo sí la conexion se realiza a tráves del contenedor de Wordpress.
 
 También es importante recordar lo que es un:
@@ -174,4 +178,59 @@ Daemon: es el motor principal que se encarga de gestionar el contenedor, funcion
 
 # .conf
 
-Vale para
+Vale para el .conf de MariaDB le pasarémos instrucciones muy claras.
+
+Y algo a tener en cuenta en los archivos .conf es que cuando ponemos: [mysqld] y [client], estos corchetes lo que hacen es separar el archivo en secciones.
+
+Además a tener en cuenta que el "bind-address    = 0.0.0.0", que básicamente es decir que permitimos que un contenedor permita conexiones mediante de interfaces de cualquier contenedor dentro de la red interna de docker.
+
+En cuanto al repaso de socket es importante recordar que es básicamente el identificador de una conexión: cliente-servidor.
+Por eso mismo en el .conf es que separó en secciones del cliente y el deamon de la BBDD(motor), y a los les configuró el socket.
+
+# WORDPRESS
+
+En cuanto al contenedor de WordPress es importante tener en cuenta la importancia de este contenedor antes de empezar a profundizar en como lo montaremos y como se hará la arquitectura e implementación del mismo.
+
+Como ya hicimos el de MariaDB que básicamente era la base de datos.
+
+Ahora haremos el contenedor que se encargará de descargar y alojar todo el código fuente de WordPress en la carpeta: "/var/www/html" mediante los volumenes de docker.
+
+# Volumenes DOCKER y montaje vinculado
+
+[Esto_lo_saque_de_la_documentación_de_Docker__Traducido_de_DeepL]
+{
+    Los volúmenes son almacenes de datos persistentes para contenedores, creados y gestionados por Docker. Puedes crear un volumen de forma explícita mediante el comando `docker volume create`, o bien Docker puede crear un volumen durante la creación del contenedor o del servicio.
+
+    Cuando se crea un volumen, este se almacena en un directorio del host de Docker. Al montar el volumen en un contenedor, lo que se monta en el contenedor es este directorio. Esto es similar al funcionamiento de los montajes vinculados, salvo que los volúmenes son gestionados por Docker y están aislados de la funcionalidad principal de la máquina host.
+
+    Los volúmenes no son una buena opción si necesitas acceder a los archivos desde el host, ya que el volumen está gestionado completamente por Docker. Utiliza montajes vinculados si necesitas acceder a archivos o directorios tanto desde los contenedores como desde el host.
+
+    Traducción realizada con la versión gratuita del traductor DeepL.com
+}
+
+Ahora para complementar esto, vi que ponía que era similar a los montajes vinculados, pero claro y eso, ¿Que es?.
+
+Pues un montaje vinculado es básicamente la manera de conectar una carpeta específica de tu computadora real (host) directamente con una carpeta dentro del contenedor sí cambias algo del archivo, docker lo ejecuta al instante (PROGRAMAR EN VIVO).
+
+Ahora los volumenes son una carpeta en una zona interna y reservada del disco duro para el docker. Lo gestiona el docker todo. Y se usa unicamente para almacenamiento persistente.
+
+Y el funcionar similar, es por la interpretación del sistema operativo, porque los ve a los dos como una carpeta con una dirección de memoria en el disco duro. La diferencia real es que el [montaje_vinculado] no guarda esos datos de forma segura, es decir si estamos escribiendo un html se esta transcribiendo al docker como con una carpeta dentro del docker igual, pero si la eliminamos en nuestro ordenador por error, perdemos ese archivo. En cambio con el [Volumen_docker] no tenemos acceso a esos datos de manera tan fácil ya que solo son accesibles dentro del sistema docker, entonces no podremos modificarla o eliminarla desde nuestro host sin conectarnos a docker. EVITANDO ELIMINARLA POR ERROR AL NO TENERLA VISIBLE Y ACCESIBLE.
+
+# Procesamiento lógico de PHP-FPM
+
+En este contenedor además de guardar los archivos encenderemos un motor llamado PHP-FPM : gestor de procesos avanzado para PHP. Permite que el servidor web (como Nginx o Apache) delegue la ejecución de archivos .php a procesos independientes, lo que mejora radicalmente el rendimiento, la estabilidad y la gestión de recursos en sitios de alto tráfico. Que se quedará escuchando en el puerto 9000 interno de Docker.
+
+# Entrypoint.sh
+
+En este script de WordPress lo que configuraremos es básicamente la estructura del contenedor post-construcción de imagen que se dividirá en modulos.
+
+[wp_core_download] : descargar de los servidores oficiales de WordPress el codigo fuente limpio y lo descomprime en /var/www/html.
+
+[wp_config_create] : Se encargá de conectar la lógica con el almacenamiento. BBDD.
+
+[wp_core_install] : Se encarga de inicializar la BBDD y configurar el usuario administrador.
+
+[wp_user_create] : Gestión de datos de usuarios adicionales.
+
+y despúes el exec que es la ejecución del motor.
+

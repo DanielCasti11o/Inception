@@ -10,10 +10,10 @@ cat << EOF > /tmp/init.sql
 
 USE mysql;
 FLUSH PRIVILEGES;
-ALTER USER 'root'@'localhost' IDENTIFIED BY '$MYSQL_ROOT_PASSWORD_FILE';
+ALTER USER 'root'@'localhost' IDENTIFIED BY '$(cat "$MYSQL_ROOT_PASSWORD_FILE")';
 CREATE DATABASE IF NOT EXISTS \`${MYSQL_DATABASE}\`;
-CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'wordpress.inception' IDENTIFIED BY '$MYSQL_PASSWORD_FILE';
-GRANT ALL PRIVILEGES ON \`${MYSQL_DATABASE}\`.* TO '${MYSQL_USER}'@'wordpress.inception';
+CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '$(cat "$MYSQL_PASSWORD_FILE")';
+GRANT ALL PRIVILEGES ON \`${MYSQL_DATABASE}\`.* TO '${MYSQL_USER}'@'%';
 FLUSH PRIVILEGES;
 
 EOF
@@ -33,6 +33,5 @@ mkdir -p /run/mysqld
 chown -R mysql:mysql /run/mysqld
 
 # Arrancamos MariaDB de forma normal para mantener el contenedor vivo
-exec /usr/bin/mysqld --user=mysql --console
-
+exec /usr/bin/mysqld --user=mysql --console --bind-address=0.0.0.0 --port=3306 --skip-networking=0
 
