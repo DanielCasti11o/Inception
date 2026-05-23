@@ -12,7 +12,12 @@ services:
       - inception
     ports:
       - "443:443"
-    restart: always # Restart: Policy "Apuntes.md, line 31"
+    restart: always # Restart: Policy "Apuntes.md, lines 31-37"
+    env_file: .env
+    volumes:
+      -wp-files:/var/www/html
+    depends_on:
+      -wordpress
 
   wordpress:
     build: ./requirements/wordpress

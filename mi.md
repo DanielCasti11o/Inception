@@ -33,6 +33,7 @@ macvlan: Red física directa. Hace el contenedor visible en una red fisica real 
 no / (default): Si el contenedor se para, se queda parado.
 
 always / (El que usaré): Se reinicia siempre, pase lo que pase.
+este nos sirve para que siempre que paremos el contenedor y lo volvamos a iniciar siempre se reinicie el servidor.
 
 on-failure : Solo se reinicia si el contenedor fallo     (return != 0), si nosotros lo paramos, no se reinicia.
 
@@ -233,4 +234,94 @@ En este script de WordPress lo que configuraremos es básicamente la estructura 
 [wp_user_create] : Gestión de datos de usuarios adicionales.
 
 y despúes el exec que es la ejecución del motor.
+
+En general lo más importante de este contenedor es el funcionamiento del entrypoint y por ejemplo en el [dockerfile] tener en cuenta que que debemos que creamos el volumen en /var/www/html y también que debemos crear el usuario www-data y a parte en el [www.conf] importante que escuche el TCP en vez del socket UNIX, ya que lo que vamos a hacer es comunicar dos contenedores como si fueran máquinas distintas y el socket UNIX funciona para comunicación ultra rápida pero dentro de la misma máquina, en cambio el TCP funciona a tráves de red y usarémos la red interna de docker para la comunicación, además de esto importante redirigir los logs de error a la stderr para en caso tal, poder hacer debug, ya que por defecto PHP-FPM manda esto a un archivo temporal que desaparece con la destrucción del contenedor entonces al ser un error que no nos deje crear el contenedor,pues no podremos ver los logs, entonces simplemente lo cambiamos para poder verlos al instante.
+
+[listen/modo] = [0.0.0.0/escucha_cualquier_ip] : [9000/puerto]
+
+# NGINX
+
+Vale lo primero a tener en cuenta con este contenedor es que será el único con un puerto expuesto al exterior:443 pero bajo el protocolo de SSL/TLS asegurándonos de que sea HTTPS.
+
+Debemos entender los certificados SSL/TLS, básicamente es un certificado que asegurá que el paquete de datos que va a salir/entrar al servidor este cifrado y protegido, y solo se pueda abrir con la llave privada.
+
+y HTTPS es el HTTP pero con el uso de estos certificados.
+
+
+[gemini]
+------------------------------------------------
+[Usuario en el navegador]
+       │
+       │ (1) Envía contraseña cifrada vía HTTPS (Puerto 443)
+       ▼
+ ┌───────────┐
+ │   NGINX   │ <── (2) Recibe el paquete, usa su Llave Privada, lo descifra
+ └─────┬─────┘         y comprueba que todo es seguro y correcto.
+       │
+       │ (3) Envía la petición ya procesada en limpio a WordPress
+       ▼     a través de la red interna de Docker (Puerto 9000).
+ ┌───────────┐
+ │ WordPress │
+ └───────────┘
+------------------------------------------------
+
+# Entrypoint
+
+Aqui dentro del script hubo algo concretamente que me llamo bastante la atención y fue el proceso de como se generan los certificados TLS.
+
+[nginx/tools/entrypoint.sh] lineas 12-18
+openssl req -x509 \
+		-nodes \
+		-days 365 \
+		-newkey rsa:2048 \
+		-keyout /etc/nginx/ssl/nginx.key \
+		-out /etc/nginx/ssl/nginx.crt \
+		-subj "/C=ES/ST=Madrid/L=Madrid/O=42/CN=${DOMAIN_NAME}"
+
+Entonces quise profundizar en este procedimiento por partes:
+
+req : Usa la gestión de solicitudes de firma de certificados y generación de claves
+
+-x509 : Esta opción genera un certificado autofirmado (self-signed) en lugar de una solicitud de certificado (CSR).
+
+[Lei_documentacion_y_pregunté_a_gemini_y_me_dio_este_ejemplo]
+-------------------------------------------------------------
+En el mundo de la seguridad web tradicional, el proceso para conseguir un certificado seguro consta de dos pasos separados:
+
+    Paso 1 (La Solicitud): Generas un archivo llamado CSR (Certificate Signing Request / Solicitud de Firma de Certificado). Es como rellenar un formulario oficial con tus datos (tu nombre, tu dominio, tu país) pero sin firmar por ninguna autoridad.
+
+    Paso 2 (La Firma): Coges ese archivo de solicitud (CSR), se lo envías a una entidad certificadora (como Let's Encrypt o DigiCert), ellos lo revisan y te devuelven el Certificado Oficial firmado.
+
+¿Qué hace exactamente la bandera -x509 en nuestro caso?
+
+La bandera -x509 le dice a OpenSSL: "Salta los intermediarios. No quiero una solicitud para enviar a nadie; quiero que firmes los datos tú mismo ahora mismo y me des el certificado final".
+-------------------------------------------------------------
+
+-nodes : Significa que no queremos cifrar la llave privada con una contraseña. pedirá que ingresemos una contraseña todo el rato que iniciemos el contenedor para que se pueda gestionar la llave privada.
+
+-days 365 : El tiempo de validez del certificado.
+
+-newkey rsa:2048 : Genera al mismo tiempo una nueva llave criptográfica utilizando el algoritmo RSA con una longitud de 2048 bits (el estándar seguro actual).
+
+Algoritmo RSA : Es el algoritmo base de la ciberseguridad actual con el uso de llaves públicas y privadas.
+Sin profundizar lo que entendí es factorizar el producto(resultado) de la multiplicación de dos números primos enormes y secretos.
+Entonces claro con ese producto(resultado) poder encontrar los dos números que hicieron parte de la multiplicación inicial es un proceso que podría tardar demasiado tiempo.
+
+-keyout: La ruta dentro del contenedor donde guardará la Llave Privada
+
+-out: La ruta donde guardará el Certificado Público
+
+-----------------------------------------------
+-subj: Te ahorra tener que rellenar el cuestionario interactivo por la terminal de forma manual. Automatiza los campos obligatorios del certificado:
+
+    C=ES (Country / País: España)
+
+    ST=Madrid (State / Comunidad o Estado)
+
+    L=Madrid (Locality / Ciudad)
+
+    O=42 (Organization / Escuela 42)
+
+    CN=${DOMAIN_NAME} (Common Name: El dominio exacto de tu web, que en tu caso se resolverá como tu login de 42, por ejemplo dacastil.42.fr).
+-------------------------------------------------
 
