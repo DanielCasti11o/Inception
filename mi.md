@@ -325,3 +325,18 @@ Entonces claro con ese producto(resultado) poder encontrar los dos números que 
     CN=${DOMAIN_NAME} (Common Name: El dominio exacto de tu web, que en tu caso se resolverá como tu login de 42, por ejemplo dacastil.42.fr).
 -------------------------------------------------
 
+# nginx.conf
+
+La estructuración de lo que vamos a hacer estará basada en eventos.
+
+worker_processes --> son los hilos de ejecución.
+
+	[include_/etc/nginx/mime.types] : Aqui reconocemos el tipo de archivo, sí es una imagen(.jpg, .png), un estilo css.
+
+	default_type application/octet-stream; --> Esto quiere decir que no lo encontró dentro de los tipos de archivos que hay dentro de los mime.types y lo que hace es directamente descargar el archivo.
+
+Ciphers : Algoritmos matemáticos de cifrado. Existen varíos algunos quedandosé obsoletos como el MD5 (El problema de este es que se podía descifrar a la fuerza con los ordenadores modernos) y existiendo nuevos y mejores como SHA-256 o SHA-3.
+
+[FAST_CGI]: Básicamente antes la gestión del CGI era un poco lenta debido a que se apagaba el motor PHP al terminar de ejecutar el script php y si queríamos correr más codigo php, teniamos que volver a encenderlo. Entonces nacio la alternativa FastCGI que lo que hizo básicamente fue no apagarlo sino dejarlo funcionando en segundo plano sin gastar tantos recursos y una vez NGINX le pidiera correr php lo hiciera directamente comunicarse con el proceso que estaba funcionando en segundo plano y no lo apagaba en ningun momento y así se podían gestionar miles de peticiones simultaneas sin tener que saturar la web. Para establecer la conexión se hace mediante el puerto 9000 que es el que espera la peticion de NGINX para que el contenedor de WordPress que tiene el motor de php corriendo pueda correr codigo php.
+
+Además es muy importante tener en cuenta que tambiém usamos FastCGI porque lo que estamos haciendo es separar en diferentes servicios dos gestiones que en el
