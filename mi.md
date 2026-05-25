@@ -339,4 +339,6 @@ Ciphers : Algoritmos matemáticos de cifrado. Existen varíos algunos quedandos�
 
 [FAST_CGI]: Básicamente antes la gestión del CGI era un poco lenta debido a que se apagaba el motor PHP al terminar de ejecutar el script php y si queríamos correr más codigo php, teniamos que volver a encenderlo. Entonces nacio la alternativa FastCGI que lo que hizo básicamente fue no apagarlo sino dejarlo funcionando en segundo plano sin gastar tantos recursos y una vez NGINX le pidiera correr php lo hiciera directamente comunicarse con el proceso que estaba funcionando en segundo plano y no lo apagaba en ningun momento y así se podían gestionar miles de peticiones simultaneas sin tener que saturar la web. Para establecer la conexión se hace mediante el puerto 9000 que es el que espera la peticion de NGINX para que el contenedor de WordPress que tiene el motor de php corriendo pueda correr codigo php.
 
-Además es muy importante tener en cuenta que tambiém usamos FastCGI porque lo que estamos haciendo es separar en diferentes servicios dos gestiones que en el
+Además es muy importante tener en cuenta que tambiém usamos FastCGI porque lo que estamos haciendo es separar en diferentes servicios dos gestiones que con el CGI normal solo gestionaba en un solo servidor.
+
+

@@ -16,6 +16,7 @@ COPY conf/nginx.conf /etc/nginx/nginx.conf
 
 # Script que genera el certificado y arranca nginx
 COPY tools/entrypoint.sh /entrypoint.sh
+
 RUN chmod +x /entrypoint.sh
 
 # Único puerto expuesto al exterior — solo HTTPS

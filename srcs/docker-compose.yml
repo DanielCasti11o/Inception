@@ -15,9 +15,9 @@ services:
     restart: always # Restart: Policy "Apuntes.md, lines 31-37"
     env_file: .env
     volumes:
-      -wp-files:/var/www/html
+      - wp-files:/var/www/html
     depends_on:
-      -wordpress
+      - wordpress
 
   wordpress:
     build: ./requirements/wordpress
@@ -79,3 +79,8 @@ secrets:
     file: ./secrets/wp_passwd.txt
   wp_admin_passwd:
     file: ./secrets/wp_admin_passwd.txt
+
+# Aqui defino los volúmenes, que es donde se guardarán los datos
+
+volumes:
+  wp-files:
