@@ -3,6 +3,7 @@ set -e
 
 echo " Initializing the script of configuration of WordPress..."
 
+
 cd /var/www/html
 
 MYSQL_PASSWORD=$(cat "$MYSQL_PASSWORD_FILE")
@@ -14,7 +15,7 @@ if [ ! -f "wp-config.php" ]; then
 
     # 1. Descargar los archivos limpios de WordPress
     # Esto se conecta a internet y baja el código fuente (carpetas wp-admin, wp-content, etc.)
-    wp core download --force --allow-root
+    wp core download --locale=es_ES --force --allow-root
 
     echo "Waiting for MariaDB to be ready..."
     while ! nc -z mariadb 3306; do
@@ -30,20 +31,25 @@ if [ ! -f "wp-config.php" ]; then
         --dbhost="mariadb" \
         --allow-root
 
-    echo "Waiting for MariaDB to be ready..."
-    while ! nc -z mariadb 3306; do
+    echo "Waiting for MariaDB to accept database queries..."
+    while ! wp db check --allow-root; do
       sleep 1
     done
-    echo "MariaDB is up! Proceeding with WordPress installation..."
+    echo "MariaDB is fully ready!"
     # 3. Ejecutar la instalación interna de la web
     # Esto crea las tablas dentro de MariaDB y configura al usuario administrador de WordPress
-    wp core install \
-        --url="${WP_URL}" \
-        --title="${WP_TITLE}" \
-        --admin_user="${WP_ADMIN_USER}" \
-        --admin_password="${WP_ADMPASSWD_FILE}" \
-        --admin_email="${WP_ADMIN_EMAIL}" \
-        --allow-root
+    if ! wp core install \
+        --url="https://dacastil.42.fr" \
+        --title="${WP_TITLE:-Inception}" \
+        --admin_user="${WP_ADMIN_USER:-admin}" \
+        --admin_password="${WP_ADMPASSWD}" \
+        --admin_email="${WP_ADMIN_EMAIL:-admin@42.fr}" \
+        --skip-email \
+        --allow-root 2> /tmp/wp_error.log; then
+            echo "❌ ERROR EN WP CORE INSTALL:"
+            cat /tmp/wp_error.log
+            exit 1
+    fi
 
     wp user create \
         "${WP_USER}" \

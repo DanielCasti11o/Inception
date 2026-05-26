@@ -42,6 +42,8 @@ services:
       - WP_ADMPASSWD_FILE=/run/secrets/wp_admin_passwd
     networks:
       - inception
+    volumes:
+      - wp-files:/var/www/html
     restart: always
 
   mariadb:

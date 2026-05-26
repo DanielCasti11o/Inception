@@ -21,4 +21,6 @@ if [ ! -f "/etc/nginx/ssl/nginx.crt" ]; then
 else
 	echo "The certificate already exists."
 
+fi
+
 exec nginx -g "daemon off;"
