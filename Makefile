@@ -18,7 +18,12 @@ RESET= \033[0m
 RED= \033[0;31m
 YELLOW = \033[0;33m
 
-all: build up # CONSTRUYE Y ARRANCA
+DATA_DIR = /home/dacastil/data
+
+all: dirs build up # CONSTRUYE Y ARRANCA
+
+dirs: # CREA DIRECTORIOS DE DATOS
+	@mkdir -p $(DATA_DIR)/wordpress $(DATA_DIR)/mariadb
 
 build: # CONSTRUYE
 
@@ -49,4 +54,4 @@ fclean:
 
 re: fclean all
 
-.PHONY all build up down status logs clean fclean re
+.PHONY: all build up down status logs clean fclean re

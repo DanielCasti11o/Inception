@@ -51,16 +51,18 @@ services:
     container_name: mariadb
     expose:
       - "3306"
-    secrets: # Aqui añadimos los secretos de compose
+    secrets:
       - db_password
       - db_root_password
     environment:
-      - MYSQL_DATABASE=${MYSQL_DATABASE} # Name of environments.
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD_FILE=/run/secrets/db_password
       - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_root_password
     networks:
       - inception
+    volumes:
+      - mariadb-data:/var/lib/mysql
     restart: always
 
 # Aqui estoy definiendo el tipo de network que usaremos, en este caso
@@ -86,3 +88,12 @@ secrets:
 
 volumes:
   wp-files:
+    driver_opts:
+      type: none
+      device: /home/dacastil/data/wordpress
+      o: bind
+  mariadb-data:
+    driver_opts:
+      type: none
+      device: /home/dacastil/data/mariadb
+      o: bind

@@ -13,8 +13,6 @@ WP_USPASSWD=$(cat "$WP_USPASSWD_FILE")
 if [ ! -f "wp-config.php" ]; then
     echo "'wp-config.php' is not found. Starting fresh installation of WordPress..."
 
-    # 1. Descargar los archivos limpios de WordPress
-    # Esto se conecta a internet y baja el código fuente (carpetas wp-admin, wp-content, etc.)
     wp core download --locale=es_ES --force --allow-root
 
     echo "Waiting for MariaDB to be ready..."
@@ -22,34 +20,32 @@ if [ ! -f "wp-config.php" ]; then
       sleep 1
     done
     echo "MariaDB is up! Proceeding with WordPress installation..."
-    # 2. Crear el archivo 'wp-config.php' (El puente con la base de datos)
-    # Aquí es donde vinculamos WordPress con MariaDB usando las contraseñas que leímos de los secretos
+
     wp config create \
         --dbname="${MYSQL_DATABASE}" \
         --dbuser="${MYSQL_USER}" \
         --dbpass="${MYSQL_PASSWORD}" \
         --dbhost="mariadb" \
         --allow-root
+fi
 
-    echo "Waiting for MariaDB to accept database queries..."
-    while ! wp db check --allow-root; do
-      sleep 1
-    done
-    echo "MariaDB is fully ready!"
-    # 3. Ejecutar la instalación interna de la web
-    # Esto crea las tablas dentro de MariaDB y configura al usuario administrador de WordPress
-    if ! wp core install \
-        --url="https://dacastil.42.fr" \
+echo "Waiting for MariaDB to accept database queries..."
+while ! wp db check --allow-root; do
+    sleep 1
+done
+echo "MariaDB is fully ready!"
+
+if ! wp core is-installed --allow-root 2>/dev/null; then
+    echo "WordPress is not installed. Installing..."
+
+    wp core install \
+        --url="https://${DOMAIN_NAME}" \
         --title="${WP_TITLE:-Inception}" \
         --admin_user="${WP_ADMIN_USER:-admin}" \
         --admin_password="${WP_ADMPASSWD}" \
         --admin_email="${WP_ADMIN_EMAIL:-admin@42.fr}" \
         --skip-email \
-        --allow-root 2> /tmp/wp_error.log; then
-            echo "❌ ERROR EN WP CORE INSTALL:"
-            cat /tmp/wp_error.log
-            exit 1
-    fi
+        --allow-root
 
     wp user create \
         "${WP_USER}" \
@@ -57,9 +53,10 @@ if [ ! -f "wp-config.php" ]; then
         --role=author \
         --user_pass="${WP_USPASSWD}" \
         --allow-root
-	echo "¡WordPress installation complete!"
+
+    echo "WordPress installation complete!"
 else
-    echo "'wp-config.php' is already configured."
+    echo "WordPress is already installed."
 fi
 
 chown -R www-data:www-data /var/www/html
