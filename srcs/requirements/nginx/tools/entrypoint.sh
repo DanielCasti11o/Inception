@@ -2,8 +2,8 @@
 
 set -e
 
-# Con este cmd no se apagará el contenedor
-#CMD ["nginx", "-g", "daemon off;"]
+# Keep the container alive by running nginx in the foreground
+# CMD ["nginx", "-g", "daemon off;"]
 
 if [ ! -f "/etc/nginx/ssl/nginx.crt" ]; then
 
@@ -17,7 +17,7 @@ if [ ! -f "/etc/nginx/ssl/nginx.crt" ]; then
 		-out /etc/nginx/ssl/nginx.crt \
 		-subj "/C=ES/ST=Madrid/L=Madrid/O=42/CN=${DOMAIN_NAME}"
 
-	echo "-> Certificate generate to ${DOMAIN_NAME}"
+	echo "-> Certificate generated for ${DOMAIN_NAME}"
 else
 	echo "The certificate already exists."
 

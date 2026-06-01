@@ -22,7 +22,7 @@ RUN apk update && apk add --no-cache \
 
 RUN adduser -S -G www-data -H -D www-data
 
-# WP-CLI — herramienta de línea de comandos para WordPress
+# WP-CLI — command-line tool for WordPress
 RUN wget -q https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
     && chmod +x wp-cli.phar \
     && mv wp-cli.phar /usr/local/bin/wp
@@ -32,18 +32,18 @@ RUN ln -s /etc/php83 /etc/php
 
 RUN sed -i 's/memory_limit = 128M/memory_limit = 512M/g' /etc/php83/php.ini
 
-# Directorio raíz del sitio — el volumen se monta aquí // a parte esta será la ruta dónde se crearán todos los html.
+# Site root — the volume is mounted here; all HTML files are created under this path
 RUN mkdir -p /var/www/html
 WORKDIR /var/www/html
 
-# Configuración de php-fpm
+# php-fpm pool configuration
 COPY conf/www.conf /etc/php83/php-fpm.d/www.conf
 
-# Script de arranque
+# Entrypoint script
 COPY tools/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# php-fpm escucha en 9000 — solo visible dentro de la red Docker
+# php-fpm listens on 9000 — only visible inside the Docker network
 EXPOSE 9000
 
 ENTRYPOINT ["/entrypoint.sh"]

@@ -6,7 +6,7 @@
 #    By: dacastil <dacastil@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/15 16:48:02 by dacastil          #+#    #+#              #
-#    Updated: 2026/05/15 17:01:49 by dacastil         ###   ########.fr        #
+#    Updated: 2026/06/01 18:26:27 by dacastil         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -20,21 +20,20 @@ YELLOW = \033[0;33m
 
 DATA_DIR = /home/dacastil/data
 
-all: dirs build up # CONSTRUYE Y ARRANCA
+all: dirs build up
 
-dirs: # CREA DIRECTORIOS DE DATOS
+dirs:
 	@mkdir -p $(DATA_DIR)/wordpress $(DATA_DIR)/mariadb
 
-build: # CONSTRUYE
-
+build:
 	@echo "$(GREEN)Building the images... $(RESET)"
 	@docker compose -f $(COMPOSE_FILE) build
 
-up: # ARRANCA
+up:
 	@echo "$(GREEN)Uploading containers... $(RESET)"
 	@docker compose -f $(COMPOSE_FILE) up -d
 
-down: # DETIENE Y ELIMINA
+down:
 	@echo "$(RED) stopping and removing containers... $(RESET)"
 	@docker compose -f $(COMPOSE_FILE) down
 

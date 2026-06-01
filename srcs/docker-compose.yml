@@ -1,18 +1,17 @@
-# orquestador de servicios
+# service orchestrator
 
-# Se encargará de levantar los servicios.
-# También crea automáticamente la bridge dónde estarán los servicios
+# Starts all services and automatically creates the bridge network
 version: '3.8'
 
 services:
   nginx:
-    build: ./requirements/nginx # Ruta dockerfile NGINX
+    build: ./requirements/nginx # NGINX Dockerfile path
     container_name: nginx
     networks:
       - inception
     ports:
       - "443:443"
-    restart: always # Restart: Policy "Apuntes.md, lines 31-37"
+    restart: always # Restart policy
     env_file: .env
     volumes:
       - wp-files:/var/www/html
@@ -65,14 +64,12 @@ services:
       - mariadb-data:/var/lib/mysql
     restart: always
 
-# Aqui estoy definiendo el tipo de network que usaremos, en este caso
-# bridge.
+# Network type: bridge
 networks:
   inception:
     driver : bridge
 
-# Aqui definiré los secrets, que será donde guardaré las
-# contraseñas y variables de entorno confidenciales
+# Docker secrets — stores passwords and sensitive environment variables
 
 secrets:
   db_password:
@@ -84,7 +81,7 @@ secrets:
   wp_admin_passwd:
     file: ./secrets/wp_admin_passwd.txt
 
-# Aqui defino los volúmenes, que es donde se guardarán los datos
+# Named volumes — persistent data storage
 
 volumes:
   wp-files:
@@ -97,3 +94,4 @@ volumes:
       type: none
       device: /home/dacastil/data/mariadb
       o: bind
+

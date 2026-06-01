@@ -1,25 +1,25 @@
 FROM alpine:3.19
 
-#instalamos los paquetes de nginx(servidor) y openssl(Certificados SSL)
+# Install nginx and openssl (TLS certificates)
 RUN apk update && apk add --no-cache \
     nginx \
     openssl && \
     rm -rf /var/cache/apk/*
 
 
-# Directorio para el certificado TLS
+# Directory for the TLS certificate
 RUN mkdir -p /etc/nginx/ssl
 
 
-# Configuración de NGINX
+# NGINX configuration
 COPY conf/nginx.conf /etc/nginx/nginx.conf
 
-# Script que genera el certificado y arranca nginx
+# Entrypoint script — generates the certificate and starts nginx
 COPY tools/entrypoint.sh /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh
 
-# Único puerto expuesto al exterior — solo HTTPS
+# Only port exposed to the outside — HTTPS only
 EXPOSE 443
 
 

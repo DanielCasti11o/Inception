@@ -1,29 +1,26 @@
 FROM alpine:3.19
 
-# Instalamos MariaDB y limpiamos caché en la misma capa.
+# Install MariaDB and clean cache in the same layer
 RUN apk update && \
 	apk add --no-cache mariadb mariadb-client && \
 	rm -rf /var/cache/apk/*
 
-# Copiar el .conf
+# Copy MariaDB configuration file
 COPY conf/.conf /etc/my.cnf.d/.conf
 
-# Copiar el script ENTRYPOINT.SH
+# Copy entrypoint script
 COPY tools/entrypoint.sh /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh
 
-# Volumenes de datos (VIVOS)
+# Data directory for the database engine and its tables/users
 
 RUN mkdir -p /var/lib/mysql && \
     chown -R mysql:mysql /var/lib/mysql
-# siendo /var/lib/mysql la ruta del directorio dónde estará el motor de la base
-# de datos y dónde se guardaran las tablas y usuarios.
 
 EXPOSE 3306
 
-# Esto corre el script de entrypoint.sh dónde lo que haremos es
-# inicializar la BD y lanza mysql y definir que solo se puede conectar
-# a través del contenedor de WordPress.
+# Run the entrypoint script: initializes the DB, starts MariaDB,
+# and restricts connections to the WordPress container only
 ENTRYPOINT ["/entrypoint.sh"]
 

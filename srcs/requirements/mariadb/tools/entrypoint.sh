@@ -1,11 +1,11 @@
 #!/bin/sh
 set -e
 
-# Solo inicializar si el datadir está vacío (primer arranque)
+# Only initialize if the datadir is empty (first boot)
 if [ ! -d "/var/lib/mysql/mysql" ]; then
 
 mariadb-install-db --user=mysql --datadir=/var/lib/mysql
-# Creamos un archivo sql para inyectar el usuario a la base  de datos lo primero
+# Create a temporary SQL file to initialize the database and users
 cat << EOF > /tmp/init.sql
 
 USE mysql;
@@ -18,13 +18,12 @@ FLUSH PRIVILEGES;
 
 EOF
 
-# /usr/bib/mysqld --> Ejecutamos el motor del deamon de MariaDB de la BBDD
-# --user=mysql --> Con esto indicamos que no inicie con el usuario root
-# --bootstrap --> Se enciende de forma aislada, temporal y silenciosa que únicamente lo que va a hacer es guardar los datos del init.sql en la BBDD
-# < /tmp/init.sql --> Dice básicamente que el input que recibirá será el init.sql
+# /usr/bin/mysqld --user=mysql       → run the MariaDB engine as the mysql user
+# --bootstrap                       → start in bootstrap mode (isolated, temporary) to apply init.sql
+# < /tmp/init.sql                   → feed the SQL file as input
 /usr/bin/mysqld --user=mysql --bootstrap < /tmp/init.sql
 
-# Una vez realizado el proceso del init, eliminamos el archivo innecesario.
+# Clean up the temporary SQL file
 rm -f /tmp/init.sql
 
 fi
@@ -32,6 +31,6 @@ fi
 mkdir -p /run/mysqld
 chown -R mysql:mysql /run/mysqld
 
-# Arrancamos MariaDB de forma normal para mantener el contenedor vivo
+# Start MariaDB normally to keep the container alive
 exec /usr/bin/mysqld --user=mysql --console --bind-address=0.0.0.0 --port=3306 --skip-networking=0
 
